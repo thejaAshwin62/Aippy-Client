@@ -6,7 +6,7 @@ import { SparklesCore } from "../components/ui/sparkles"
 import { TypewriterEffect } from "../components/ui/typewriter-effect"
 import { InfiniteMovingCards } from "../components/ui/infinite-moving-cards"
 import { CardContainer, CardBody, CardItem } from "../components/ui/3d-card"
-import Footer from "../components/footer"
+import Footer from "../components/Footer"
 
 const LandingPage = () => {
   useEffect(() => {
