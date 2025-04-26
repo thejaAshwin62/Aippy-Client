@@ -4,5 +4,28 @@
       "source": "/api/v1/:path*",
       "destination": "https://aipply-springboot.onrender.com/api/v1/:path*"
     }
+  ],
+  "headers": [
+    {
+      "source": "/api/v1/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://aipply-silk.vercel.app"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Accept, Authorization"
+        },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        }
+      ]
+    }
   ]
 } 
