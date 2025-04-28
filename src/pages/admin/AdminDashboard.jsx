@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Users,
   Building,
@@ -25,12 +25,21 @@ import {
   Layers,
   Mail,
   Building2,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Link } from "react-router-dom"
-import { cn } from "../../lib/utils"
-import customFetch from "../../lib/customFetch"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
+import { Link } from "react-router-dom";
+import { cn } from "../../lib/utils";
+import customFetch from "../../lib/customFetch";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Cell,
+} from "recharts";
 
 // Monthly data for charts
 const monthlyData = {
@@ -38,199 +47,255 @@ const monthlyData = {
   companies: [30, 40, 45, 55, 65, 75, 85, 95, 105, 115, 125, 135],
   jobs: [80, 100, 130, 160, 190, 220, 250, 280, 310, 340, 370, 400],
   applications: [200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750],
-}
+};
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("dashboard")
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalCompanies: 0,
     totalJobs: 0,
-    usersRequestingCompany: 0
-  })
-  const [users, setUsers] = useState([])
-  const [companies, setCompanies] = useState([])
-  const [jobs, setJobs] = useState([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [roleFilter, setRoleFilter] = useState("all")
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [selectedUser, setSelectedUser] = useState(null)
-  const [showUserModal, setShowUserModal] = useState(false)
-  const [showCompanyModal, setShowCompanyModal] = useState(false)
-  const [selectedCompany, setSelectedCompany] = useState(null)
-  const [notification, setNotification] = useState(null)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [timeRange, setTimeRange] = useState("month")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [recentActivity, setRecentActivity] = useState([])
+    usersRequestingCompany: 0,
+  });
+  const [users, setUsers] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [error, setError] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [timeRange, setTimeRange] = useState("month");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [recentActivity, setRecentActivity] = useState([]);
   const [growthData, setGrowthData] = useState({
     users: [],
     companies: [],
-    jobs: []
-  })
-  const[topCompanies, setTopCompanies] = useState([])
+    jobs: [],
+  });
+  const [topCompanies, setTopCompanies] = useState([]);
+  const [isUserLoading, setIsUserLoading] = useState(true);
+  const [isRecentUsersLoading, setIsRecentUsersLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [])
+    fetchDashboardData();
+  }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetchTopCompanies = async () => {
       try {
-        const response = await customFetch.get('/admin/top-companies')
-        setTopCompanies(response.data)
+        const response = await customFetch.get("/admin/top-companies");
+        setTopCompanies(response.data);
       } catch (error) {
-        console.error('Error fetching top companies:', error)
-        showNotification('error', 'Failed to load top companies')
+        console.error("Error fetching top companies:", error);
+        showNotification("error", "Failed to load top companies");
       }
-    }
-    fetchTopCompanies()
-  }, [])
+    };
+    fetchTopCompanies();
+  }, []);
 
   // console.log(topCompanies)
 
   const fetchDashboardData = async () => {
     try {
-      setIsLoading(true)
-      
-      // Fetch admin stats
-      const statsResponse = await customFetch.get('/admin/stats')
-      setStats(statsResponse.data)
-      
-      // Fetch users
-      const usersResponse = await customFetch.get('/admin/users')
-      setUsers(usersResponse.data)
-      
-      // Fetch companies
-      const companiesResponse = await customFetch.get('/admin/companies')
-      setCompanies(companiesResponse.data)
-      
-      // Fetch jobs
-      const jobsResponse = await customFetch.get('/admin/jobs')
-      setJobs(jobsResponse.data)
+      setIsLoading(true);
 
+      // Fetch admin stats
+      const statsResponse = await customFetch.get("/admin/stats");
+      setStats(statsResponse.data);
+      setIsLoading(false);
+      // Fetch users
+      const usersResponse = await customFetch.get("/admin/users");
+      const userData = await usersResponse.data;
+      setUsers(userData);
+      setIsRecentUsersLoading(false);
+
+      // Fetch companies
+      const companiesResponse = await customFetch.get("/admin/companies");
+      setCompanies(companiesResponse.data);
+      setIsLoading(false);
+      // Fetch jobs
+      const jobsResponse = await customFetch.get("/admin/jobs");
+      setJobs(jobsResponse.data);
+      setIsLoading(false);
       // Create growth data
       const growthData = {
-        users: Array(1).fill(0).map((_, i) => Math.floor(Math.random() * 100) + 50), // Example data
-        companies: Array(1).fill(0).map((_, i) => Math.floor(Math.random() * 50) + 20), // Example data
-        jobs: Array(1).fill(0).map((_, i) => Math.floor(Math.random() * 200) + 100) // Example data
-      }
-      setGrowthData(growthData)
+        users: Array(1)
+          .fill(0)
+          .map((_, i) => Math.floor(Math.random() * 100) + 50), // Example data
+        companies: Array(1)
+          .fill(0)
+          .map((_, i) => Math.floor(Math.random() * 50) + 20), // Example data
+        jobs: Array(1)
+          .fill(0)
+          .map((_, i) => Math.floor(Math.random() * 200) + 100), // Example data
+      };
+      setGrowthData(growthData);
 
-      // Create recent activity from latest items
-      const latestUser = usersResponse.data[0]
-      const latestCompany = companiesResponse.data[0]
-      const latestJob = jobsResponse.data[0]
+      const latestUser = getLatestItem(usersResponse.data); // Get latest user
+      setIsUserLoading(false);
+      const latestCompany = getLatestItem(companiesResponse.data); // Get latest company
+      const latestJob = getLatestItem(jobsResponse.data); // Get latest job
 
-      const activity = []
+      const activity = [];
       if (latestUser) {
         activity.push({
-          type: 'user',
-          title: 'New User Registration',
-          description: `${latestUser.name || latestUser.email} joined as a user`,
-          time: 'Just now',
+          type: "user",
+          title: "New User Registration",
+          description: `${
+            latestUser.name || latestUser.email
+          } joined as a user`,
+          time: "Just now",
           icon: <UserPlus size={16} className="text-blue-500" />,
-          color: 'blue'
-        })
+          color: "blue",
+        });
       }
       if (latestCompany) {
         activity.push({
-          type: 'company',
-          title: 'New Company Registration',
+          type: "company",
+          title: "New Company Registration",
           description: `${latestCompany.companyName} created an account`,
-          time: 'Just now',
+          time: "Just now",
           icon: <Building size={16} className="text-purple-500" />,
-          color: 'purple'
-        })
+          color: "purple",
+        });
       }
       if (latestJob) {
         activity.push({
-          type: 'job',
-          title: 'New Job Posted',
+          type: "job",
+          title: "New Job Posted",
           description: `${latestJob.title} position at ${latestJob.company}`,
-          time: 'Just now',
+          time: "Just now",
           icon: <Briefcase size={16} className="text-indigo-500" />,
-          color: 'indigo'
-        })
+          color: "indigo",
+        });
       }
-      setRecentActivity(activity)
-
+      setRecentActivity(activity);
     } catch (error) {
-      console.error('Error fetching dashboard data:', error)
-      showNotification('error', 'Failed to load dashboard data')
+      console.error("Error fetching dashboard data:", error);
+      showNotification("error", "Failed to load dashboard data");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+
+  const getLatestItem = (data) => {
+    // Sort the data by ID in descending order to get the latest entry first
+    if (Array.isArray(data) && data.length > 0) {
+      const sortedData = data.sort((a, b) => b.id - a.id); // Sorting by ID, newest first
+      return sortedData[0]; // Get the latest item after sorting
+    }
+    return null; // Return null if no data is found
+  };
+
+  //   useEffect(()=>{
+  //  fetchDashboardData();
+  //   },[])
+
+  // useEffect(() => {
+  //   console.log(users); // This will log every time `users` state changes
+  // }, [users]);
 
   const handleUserRoleChange = async (userId, newRole) => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       // In a real application, you would update the user role via API
       // await customFetch.put(`/admin/users/${userId}/role`, { role: newRole })
 
       // For demo purposes, we'll update the local state
-      setUsers((prevUsers) => prevUsers.map((user) => (user.id === userId ? { ...user, role: newRole } : user)))
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, role: newRole } : user
+        )
+      );
 
-      showNotification("success", `User role updated to ${newRole} successfully!`)
-      setIsLoading(false)
+      showNotification(
+        "success",
+        `User role updated to ${newRole} successfully!`
+      );
+      setIsLoading(false);
     } catch (error) {
-      console.error("Error updating user role:", error)
-      showNotification("error", "Failed to update user role. Please try again.")
-      setIsLoading(false)
+      console.error("Error updating user role:", error);
+      showNotification(
+        "error",
+        "Failed to update user role. Please try again."
+      );
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleUserStatusChange = async (userId, newStatus) => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       // In a real application, you would update the user status via API
       // await customFetch.put(`/admin/users/${userId}/status`, { status: newStatus })
 
       // For demo purposes, we'll update the local state
-      setUsers((prevUsers) => prevUsers.map((user) => (user.id === userId ? { ...user, status: newStatus } : user)))
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, status: newStatus } : user
+        )
+      );
 
-      showNotification("success", `User status updated to ${newStatus} successfully!`)
-      setIsLoading(false)
+      showNotification(
+        "success",
+        `User status updated to ${newStatus} successfully!`
+      );
+      setIsLoading(false);
     } catch (error) {
-      console.error("Error updating user status:", error)
-      showNotification("error", "Failed to update user status. Please try again.")
-      setIsLoading(false)
+      console.error("Error updating user status:", error);
+      showNotification(
+        "error",
+        "Failed to update user status. Please try again."
+      );
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleCompanyStatusChange = async (companyId, newStatus) => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       // In a real application, you would update the company status via API
       // await customFetch.put(`/admin/companies/${companyId}/status`, { status: newStatus })
 
       // For demo purposes, we'll update the local state
       setCompanies((prevCompanies) =>
-        prevCompanies.map((company) => (company.id === companyId ? { ...company, status: newStatus } : company)),
-      )
+        prevCompanies.map((company) =>
+          company.id === companyId ? { ...company, status: newStatus } : company
+        )
+      );
 
-      showNotification("success", `Company status updated to ${newStatus} successfully!`)
-      setIsLoading(false)
+      showNotification(
+        "success",
+        `Company status updated to ${newStatus} successfully!`
+      );
+      setIsLoading(false);
     } catch (error) {
-      console.error("Error updating company status:", error)
-      showNotification("error", "Failed to update company status. Please try again.")
-      setIsLoading(false)
+      console.error("Error updating company status:", error);
+      showNotification(
+        "error",
+        "Failed to update company status. Please try again."
+      );
+      setIsLoading(false);
     }
-  }
-
+  };
 
   const showNotification = (type, message) => {
-    setNotification({ type, message })
+    setNotification({ type, message });
     // Auto-hide notification after 3 seconds
     setTimeout(() => {
-      setNotification(null)
-    }, 3000)
-  }
+      setNotification(null);
+    }, 3000);
+  };
 
   // Filter users based on search term, status, and role
   const filteredUsers = users.filter((user) => {
@@ -238,7 +303,8 @@ const AdminDashboard = () => {
       searchTerm === "" ||
       (user.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
       (user.email?.toLowerCase() || "").includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || user.status === statusFilter;
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     return matchesSearch && matchesStatus && matchesRole;
   });
@@ -248,7 +314,8 @@ const AdminDashboard = () => {
     const matchesSearch =
       searchTerm === "" ||
       (company.name?.toLowerCase() || "").includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || company.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || company.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -257,19 +324,24 @@ const AdminDashboard = () => {
     const matchesSearch =
       searchTerm === "" ||
       (job.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (job.company?.companyName?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+      (job.company?.companyName?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      );
     const matchesStatus = statusFilter === "all" || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem)
-  const currentCompanies = filteredCompanies.slice(indexOfFirstItem, indexOfLastItem)
-  const currentJobs = filteredJobs.slice(indexOfFirstItem, indexOfLastItem)
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+  const currentCompanies = filteredCompanies.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+  const currentJobs = filteredJobs.slice(indexOfFirstItem, indexOfLastItem);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber)
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // If loading, show loading state
   if (isLoading && !stats) {
@@ -280,7 +352,7 @@ const AdminDashboard = () => {
           <p className="mt-4 text-gray-600">Loading dashboard...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // If error, show error state
@@ -298,13 +370,13 @@ const AdminDashboard = () => {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex mt-14">
-  {/* Sidebar */}
-  <AnimatePresence>
+      {/* Sidebar */}
+      <AnimatePresence>
         {(sidebarOpen || mobileMenuOpen) && (
           <motion.aside
             initial={{ x: -300, opacity: 0 }}
@@ -324,8 +396,8 @@ const AdminDashboard = () => {
                 </Link>
                 <button
                   onClick={() => {
-                    setSidebarOpen(!sidebarOpen)
-                    setMobileMenuOpen(false)
+                    setSidebarOpen(!sidebarOpen);
+                    setMobileMenuOpen(false);
                   }}
                   className="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                 >
@@ -415,15 +487,20 @@ const AdminDashboard = () => {
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className={cn("flex-1 transition-all duration-300 ease-in-out", sidebarOpen ? "md:ml-64" : "md:ml-0")}>
+      <div
+        className={cn(
+          "flex-1 transition-all duration-300 ease-in-out",
+          sidebarOpen ? "md:ml-64" : "md:ml-0"
+        )}
+      >
         {/* Top Navigation */}
         <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
           <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center">
               <button
                 onClick={() => {
-                  setSidebarOpen(!sidebarOpen)
-                  setMobileMenuOpen(false)
+                  setSidebarOpen(!sidebarOpen);
+                  setMobileMenuOpen(false);
                 }}
                 className="hidden md:block p-2 mr-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
               >
@@ -435,7 +512,9 @@ const AdminDashboard = () => {
               >
                 <Menu size={20} />
               </button>
-              <h1 className="text-xl font-semibold text-gray-800">Admin Dashboard</h1>
+              <h1 className="text-xl font-semibold text-gray-800">
+                Admin Dashboard
+              </h1>
             </div>
 
             <div className="flex items-center space-x-4">
@@ -448,7 +527,9 @@ const AdminDashboard = () => {
                   <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium">
                     A
                   </div>
-                  <span className="hidden md:block text-sm font-medium text-gray-700">Admin User</span>
+                  <span className="hidden md:block text-sm font-medium text-gray-700">
+                    Admin User
+                  </span>
                 </button>
               </div>
             </div>
@@ -472,19 +553,28 @@ const AdminDashboard = () => {
                     <Users size={24} />
                   </div>
                   <div className="ml-4">
-                    <h2 className="text-sm font-medium text-gray-500">Total Users</h2>
-                    <p className="text-2xl font-semibold text-gray-900">{stats.totalUsers.toLocaleString()}</p>
+                    <h2 className="text-sm font-medium text-gray-500">
+                      Total Users
+                    </h2>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {stats.totalUsers.toLocaleString()}
+                    </p>
                     <p className="text-sm text-gray-500 mt-1">
-                      <span className="text-green-600">+{stats.userGrowth || 0}%</span> from last month
+                      <span className="text-green-600">
+                        +{stats.userGrowth || 0}%
+                      </span>{" "}
+                      from last month
                     </p>
                     <div className="flex items-center mt-2">
                       <Users size={16} className="text-gray-400 mr-1" />
-                      <span className="text-sm font-medium">{stats.recentUsers || 0} new</span>
+                      <span className="text-sm font-medium">
+                        {stats.recentUsers || 0} new
+                      </span>
                     </div>
                   </div>
                 </div>
               </motion.div>
-              
+
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -496,19 +586,28 @@ const AdminDashboard = () => {
                     <Building2 size={24} />
                   </div>
                   <div className="ml-4">
-                    <h2 className="text-sm font-medium text-gray-500">Total Companies</h2>
-                    <p className="text-2xl font-semibold text-gray-900">{stats.totalCompanies.toLocaleString()}</p>
+                    <h2 className="text-sm font-medium text-gray-500">
+                      Total Companies
+                    </h2>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {stats.totalCompanies.toLocaleString()}
+                    </p>
                     <p className="text-sm text-gray-500 mt-1">
-                      <span className="text-green-600">+{stats.companyGrowth || 0}%</span> from last month
+                      <span className="text-green-600">
+                        +{stats.companyGrowth || 0}%
+                      </span>{" "}
+                      from last month
                     </p>
                     <div className="flex items-center mt-2">
                       <Building2 size={16} className="text-gray-400 mr-1" />
-                      <span className="text-sm font-medium">{stats.recentCompanies || 0} new</span>
+                      <span className="text-sm font-medium">
+                        {stats.recentCompanies || 0} new
+                      </span>
                     </div>
                   </div>
                 </div>
               </motion.div>
-              
+
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -520,19 +619,28 @@ const AdminDashboard = () => {
                     <Briefcase size={24} />
                   </div>
                   <div className="ml-4">
-                    <h2 className="text-sm font-medium text-gray-500">Total Jobs</h2>
-                    <p className="text-2xl font-semibold text-gray-900">{stats.totalJobs.toLocaleString()}</p>
+                    <h2 className="text-sm font-medium text-gray-500">
+                      Total Jobs
+                    </h2>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {stats.totalJobs.toLocaleString()}
+                    </p>
                     <p className="text-sm text-gray-500 mt-1">
-                      <span className="text-green-600">+{stats.jobGrowth || 0}%</span> from last month
+                      <span className="text-green-600">
+                        +{stats.jobGrowth || 0}%
+                      </span>{" "}
+                      from last month
                     </p>
                     <div className="flex items-center mt-2">
                       <Briefcase size={16} className="text-gray-400 mr-1" />
-                      <span className="text-sm font-medium">{stats.recentJobs || 0} new</span>
+                      <span className="text-sm font-medium">
+                        {stats.recentJobs || 0} new
+                      </span>
                     </div>
                   </div>
                 </div>
               </motion.div>
-              
+
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -544,8 +652,12 @@ const AdminDashboard = () => {
                     <UserPlus size={24} />
                   </div>
                   <div className="ml-4">
-                    <h2 className="text-sm font-medium text-gray-500">Pending Approvals</h2>
-                    <p className="text-2xl font-semibold text-gray-900">{stats.usersRequestingCompany}</p>
+                    <h2 className="text-sm font-medium text-gray-500">
+                      Pending Approvals
+                    </h2>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {stats.usersRequestingCompany}
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -562,8 +674,13 @@ const AdminDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-                  <p className="text-gray-600">Welcome to the admin dashboard. Here's an overview of your platform.</p>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Dashboard Overview
+                  </h2>
+                  <p className="text-gray-600">
+                    Welcome to the admin dashboard. Here's an overview of your
+                    platform.
+                  </p>
                 </motion.div>
 
                 <motion.div
@@ -594,25 +711,36 @@ const AdminDashboard = () => {
                 >
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Total Users</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Total Users
+                      </h3>
                       <div className="p-3 bg-blue-50 rounded-full">
                         <Users size={20} className="text-blue-600" />
                       </div>
                     </div>
                     <div className="flex items-end justify-between">
                       <div>
-                        <p className="text-3xl font-bold text-gray-900">{stats.totalUsers.toLocaleString()}</p>
+                        <p className="text-3xl font-bold text-gray-900">
+                          {stats.totalUsers.toLocaleString()}
+                        </p>
                         <p className="text-sm text-gray-500 mt-1">
-                          <span className="text-green-600">+{stats.userGrowth || 0}%</span> from last month
+                          <span className="text-green-600">
+                            +{stats.userGrowth || 0}%
+                          </span>{" "}
+                          from last month
                         </p>
                         <div className="flex items-center mt-2">
                           <Users size={16} className="text-gray-400 mr-1" />
-                          <span className="text-sm font-medium">{stats.recentUsers || 0} new</span>
+                          <span className="text-sm font-medium">
+                            {stats.recentUsers || 0} new
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center text-green-600 bg-green-50 px-3 py-1 rounded-full">
                         <ArrowUpRight size={16} className="mr-1" />
-                        <span className="text-sm font-medium">{stats.recentUsers || 0} new</span>
+                        <span className="text-sm font-medium">
+                          {stats.recentUsers || 0} new
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -628,25 +756,36 @@ const AdminDashboard = () => {
                 >
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Total Companies</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Total Companies
+                      </h3>
                       <div className="p-3 bg-purple-50 rounded-full">
                         <Building size={20} className="text-purple-600" />
                       </div>
                     </div>
                     <div className="flex items-end justify-between">
                       <div>
-                        <p className="text-3xl font-bold text-gray-900">{stats.totalCompanies.toLocaleString()}</p>
+                        <p className="text-3xl font-bold text-gray-900">
+                          {stats.totalCompanies.toLocaleString()}
+                        </p>
                         <p className="text-sm text-gray-500 mt-1">
-                          <span className="text-green-600">+{stats.companyGrowth || 0}%</span> from last month
+                          <span className="text-green-600">
+                            +{stats.companyGrowth || 0}%
+                          </span>{" "}
+                          from last month
                         </p>
                         <div className="flex items-center mt-2">
                           <Building2 size={16} className="text-gray-400 mr-1" />
-                          <span className="text-sm font-medium">{stats.recentCompanies || 0} new</span>
+                          <span className="text-sm font-medium">
+                            {stats.recentCompanies || 0} new
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center text-green-600 bg-green-50 px-3 py-1 rounded-full">
                         <ArrowUpRight size={16} className="mr-1" />
-                        <span className="text-sm font-medium">{stats.recentCompanies || 0} new</span>
+                        <span className="text-sm font-medium">
+                          {stats.recentCompanies || 0} new
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -662,25 +801,36 @@ const AdminDashboard = () => {
                 >
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Total Jobs</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Total Jobs
+                      </h3>
                       <div className="p-3 bg-indigo-50 rounded-full">
                         <Briefcase size={20} className="text-indigo-600" />
                       </div>
                     </div>
                     <div className="flex items-end justify-between">
                       <div>
-                        <p className="text-3xl font-bold text-gray-900">{stats.totalJobs.toLocaleString()}</p>
+                        <p className="text-3xl font-bold text-gray-900">
+                          {stats.totalJobs.toLocaleString()}
+                        </p>
                         <p className="text-sm text-gray-500 mt-1">
-                          <span className="text-green-600">+{stats.jobGrowth || 0}%</span> from last month
+                          <span className="text-green-600">
+                            +{stats.jobGrowth || 0}%
+                          </span>{" "}
+                          from last month
                         </p>
                         <div className="flex items-center mt-2">
                           <Briefcase size={16} className="text-gray-400 mr-1" />
-                          <span className="text-sm font-medium">{stats.recentJobs || 0} new</span>
+                          <span className="text-sm font-medium">
+                            {stats.recentJobs || 0} new
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center text-green-600 bg-green-50 px-3 py-1 rounded-full">
                         <ArrowUpRight size={16} className="mr-1" />
-                        <span className="text-sm font-medium">{stats.recentJobs || 0} new</span>
+                        <span className="text-sm font-medium">
+                          {stats.recentJobs || 0} new
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -696,16 +846,26 @@ const AdminDashboard = () => {
                 >
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Active Jobs</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Active Jobs
+                      </h3>
                       <div className="p-3 bg-green-50 rounded-full">
                         <CheckCircle size={20} className="text-green-600" />
                       </div>
                     </div>
                     <div className="flex items-end justify-between">
                       <div>
-                        <p className="text-3xl font-bold text-gray-900">{(stats.activeJobs || 0).toLocaleString()}</p>
+                        <p className="text-3xl font-bold text-gray-900">
+                          {(stats.activeJobs || 0).toLocaleString()}
+                        </p>
                         <p className="text-sm text-gray-500 mt-1">
-                          {stats.totalJobs > 0 ? ((stats.activeJobs || 0) / stats.totalJobs * 100).toFixed(1) : 0}% of total jobs
+                          {stats.totalJobs > 0
+                            ? (
+                                ((stats.activeJobs || 0) / stats.totalJobs) *
+                                100
+                              ).toFixed(1)
+                            : 0}
+                          % of total jobs
                         </p>
                       </div>
                       <div className="flex items-center text-green-600 bg-green-50 px-3 py-1 rounded-full">
@@ -726,17 +886,23 @@ const AdminDashboard = () => {
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Platform Growth</h3>
-                      <p className="text-sm text-gray-500">Total counts of users, companies, and jobs</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Platform Growth
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Total counts of users, companies, and jobs
+                      </p>
                     </div>
                   </div>
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={[
-                        { name: 'Users', count: stats.totalUsers },
-                        { name: 'Companies', count: stats.totalCompanies },
-                        { name: 'Jobs', count: stats.totalJobs },
-                      ]}>
+                      <BarChart
+                        data={[
+                          { name: "Users", count: stats.totalUsers },
+                          { name: "Companies", count: stats.totalCompanies },
+                          { name: "Jobs", count: stats.totalJobs },
+                        ]}
+                      >
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis allowDecimals={false} />
@@ -760,8 +926,12 @@ const AdminDashboard = () => {
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Pending Approvals</h3>
-                      <p className="text-sm text-gray-500">Users and companies awaiting verification</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Pending Approvals
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Users and companies awaiting verification
+                      </p>
                     </div>
                     <div className="p-3 bg-yellow-50 rounded-full">
                       <Clock size={20} className="text-yellow-600" />
@@ -774,15 +944,21 @@ const AdminDashboard = () => {
                       <div className="flex items-center">
                         <Building size={20} className="text-yellow-600 mr-3" />
                         <div>
-                          <p className="font-medium text-gray-900">Pending Companies</p>
-                          <p className="text-sm text-gray-500">Awaiting verification</p>
+                          <p className="font-medium text-gray-900">
+                            Pending Companies
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Awaiting verification
+                          </p>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold text-gray-900">{stats.usersRequestingCompany || 0}</div>
+                      <div className="text-2xl font-bold text-gray-900">
+                        {stats.usersRequestingCompany || 0}
+                      </div>
                     </div>
                     <button
                       className="w-full mt-2 px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors text-sm font-medium"
-                      onClick={() => setActiveTab('users')}
+                      onClick={() => setActiveTab("users")}
                     >
                       View All Pending Approvals
                     </button>
@@ -798,8 +974,12 @@ const AdminDashboard = () => {
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">User Distribution</h3>
-                      <p className="text-sm text-gray-500">Distribution of users by role and status</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        User Distribution
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Distribution of users by role and status
+                      </p>
                     </div>
                     <div className="p-3 bg-indigo-50 rounded-full">
                       <PieChart size={20} className="text-indigo-600" />
@@ -807,7 +987,12 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="h-64 flex items-center justify-center">
-                    <DistributionChart data={{ user: stats.totalUsers, company: stats.totalCompanies }} />
+                    <DistributionChart
+                      data={{
+                        user: stats.totalUsers,
+                        company: stats.totalCompanies,
+                      }}
+                    />
                   </div>
                 </motion.div>
 
@@ -820,8 +1005,12 @@ const AdminDashboard = () => {
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                      <p className="text-sm text-gray-500">Latest actions on the platform</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Recent Activity
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Latest actions on the platform
+                      </p>
                     </div>
                     <div className="p-3 bg-purple-50 rounded-full">
                       <Activity size={20} className="text-purple-600" />
@@ -829,21 +1018,34 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="space-y-4">
-                    {recentActivity.map((activity, index) => (
-                      <ActivityItem
-                        key={index}
-                        icon={activity.icon}
-                        title={activity.title}
-                        description={activity.description}
-                        time={activity.time}
-                        color={activity.color}
-                      />
-                    ))}
+                    {/* Show loading spinner if activity is loading */}
+                    {isUserLoading ? (
+                      <div className="flex justify-center items-center py-10">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
+                          <p className="mt-4 text-gray-600">
+                            Loading recent activity...
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      recentActivity.map((activity, index) => (
+                        <ActivityItem
+                          key={index}
+                          icon={activity.icon}
+                          title={activity.title}
+                          description={activity.description}
+                          time={activity.time}
+                          color={activity.color}
+                        />
+                      ))
+                    )}
                   </div>
 
-                  <button 
-                   onClick={() => setActiveTab("analytics")}
-                  className="w-full mt-4 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                  <button
+                    onClick={() => setActiveTab("analytics")}
+                    className="w-full mt-4 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                  >
                     View All Activity
                   </button>
                 </motion.div>
@@ -859,7 +1061,9 @@ const AdminDashboard = () => {
                   className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
                 >
                   <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 className="text-lg font-semibold text-gray-900">Recent Users</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Recent Users
+                    </h3>
                     <button
                       onClick={() => setActiveTab("users")}
                       className="text-sm text-indigo-600 hover:text-indigo-800"
@@ -867,28 +1071,50 @@ const AdminDashboard = () => {
                       View All
                     </button>
                   </div>
-                  <div className="divide-y divide-gray-200">
-                    {users.slice(0, 2).map((user) => (
-                      <div key={user.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium">
-                              {user.name ? user.name.charAt(0) : user.email.charAt(0)}
+
+                  {/* Show loading spinner if users are still loading */}
+                  {isUserLoading ? (
+                    <div className="flex justify-center items-center py-10">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
+                        <p className="mt-4 text-gray-600">
+                          Loading recent users...
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-200">
+                      {users.slice(0, 2).map((user) => (
+                        <div
+                          key={user.id}
+                          className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium">
+                                {user.name
+                                  ? user.name.charAt(0)
+                                  : user.email.charAt(0)}
+                              </div>
+                              <div className="ml-3">
+                                <p className="text-sm font-medium text-gray-900">
+                                  {user.name || "Unnamed User"}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {user.email}
+                                </p>
+                              </div>
                             </div>
-                            <div className="ml-3">
-                              <p className="text-sm font-medium text-gray-900">{user.name || 'Unnamed User'}</p>
-                              <p className="text-xs text-gray-500">{user.email}</p>
+                            <div className="flex items-center">
+                              <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                {user.role || "user"}
+                              </span>
                             </div>
-                          </div>
-                          <div className="flex items-center">
-                            <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                              {user.role || 'user'}
-                            </span>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               </div>
             </div>
@@ -904,8 +1130,12 @@ const AdminDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-                  <p className="text-gray-600">Manage all users and their roles on the platform.</p>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    User Management
+                  </h2>
+                  <p className="text-gray-600">
+                    Manage all users and their roles on the platform.
+                  </p>
                 </motion.div>
 
                 <motion.div
@@ -934,7 +1164,10 @@ const AdminDashboard = () => {
               >
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <Search
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={20}
+                    />
                     <input
                       type="text"
                       placeholder="Search users by name or email..."
@@ -974,8 +1207,12 @@ const AdminDashboard = () => {
                           )}
                         </div>
                         <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">{user.name || "Unnamed User"}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.name || "Unnamed User"}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {user.email}
+                          </div>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-sm">
@@ -986,8 +1223,8 @@ const AdminDashboard = () => {
                               user.role === "admin"
                                 ? "bg-purple-100 text-purple-800"
                                 : user.role === "company"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-gray-100 text-gray-800"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-gray-100 text-gray-800"
                             }`}
                           >
                             {user.role}
@@ -995,11 +1232,21 @@ const AdminDashboard = () => {
                         </div>
                         <div>
                           <span className="text-gray-500 block">Created:</span>
-                          <span>{new Date(user.createdAt).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
                         <div>
-                          <span className="text-gray-500 block">Request Company:</span>
-                          <span className={user.requestForCompany ? "font-bold text-yellow-800" : ""}>
+                          <span className="text-gray-500 block">
+                            Request Company:
+                          </span>
+                          <span
+                            className={
+                              user.requestForCompany
+                                ? "font-bold text-yellow-800"
+                                : ""
+                            }
+                          >
                             {user.requestForCompany ? "Yes" : "No"}
                           </span>
                         </div>
@@ -1008,18 +1255,31 @@ const AdminDashboard = () => {
                           <select
                             value={user.role}
                             onChange={async (e) => {
-                              const newRole = e.target.value
+                              const newRole = e.target.value;
                               try {
-                                setIsLoading(true)
-                                await customFetch.put(`/admin/users/${user.id}/role`, { role: newRole })
+                                setIsLoading(true);
+                                await customFetch.put(
+                                  `/admin/users/${user.id}/role`,
+                                  { role: newRole }
+                                );
                                 setUsers((prevUsers) =>
-                                  prevUsers.map((u) => (u.id === user.id ? { ...u, role: newRole } : u)),
-                                )
-                                showNotification("success", `User role updated to ${newRole} successfully!`)
+                                  prevUsers.map((u) =>
+                                    u.id === user.id
+                                      ? { ...u, role: newRole }
+                                      : u
+                                  )
+                                );
+                                showNotification(
+                                  "success",
+                                  `User role updated to ${newRole} successfully!`
+                                );
                               } catch (error) {
-                                showNotification("error", "Failed to update user role. Please try again.")
+                                showNotification(
+                                  "error",
+                                  "Failed to update user role. Please try again."
+                                );
                               } finally {
-                                setIsLoading(false)
+                                setIsLoading(false);
                               }
                             }}
                             className="bg-white border border-gray-300 text-gray-700 py-1 px-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
@@ -1061,7 +1321,10 @@ const AdminDashboard = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {currentUsers.map((user) => (
-                        <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                        <tr
+                          key={user.id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
@@ -1080,12 +1343,16 @@ const AdminDashboard = () => {
                                 )}
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {user.name}
+                                </div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-500">{user.email}</span>
+                            <span className="text-sm text-gray-500">
+                              {user.email}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
@@ -1093,8 +1360,8 @@ const AdminDashboard = () => {
                                 user.role === "admin"
                                   ? "bg-purple-100 text-purple-800"
                                   : user.role === "company"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : "bg-gray-100 text-gray-800"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-gray-100 text-gray-800"
                               }`}
                             >
                               {user.role}
@@ -1104,7 +1371,11 @@ const AdminDashboard = () => {
                             {new Date(user.createdAt).toLocaleDateString()}
                           </td>
                           <td
-                            className={`px-6 py-4 whitespace-nowrap text-sm ${user.requestForCompany ? "bg-yellow-100 font-bold text-yellow-800" : "text-gray-500"}`}
+                            className={`px-6 py-4 whitespace-nowrap text-sm ${
+                              user.requestForCompany
+                                ? "bg-yellow-100 font-bold text-yellow-800"
+                                : "text-gray-500"
+                            }`}
                           >
                             {user.requestForCompany ? "Yes" : "No"}
                           </td>
@@ -1112,18 +1383,31 @@ const AdminDashboard = () => {
                             <select
                               value={user.role}
                               onChange={async (e) => {
-                                const newRole = e.target.value
+                                const newRole = e.target.value;
                                 try {
-                                  setIsLoading(true)
-                                  await customFetch.put(`/admin/users/${user.id}/role`, { role: newRole })
+                                  setIsLoading(true);
+                                  await customFetch.put(
+                                    `/admin/users/${user.id}/role`,
+                                    { role: newRole }
+                                  );
                                   setUsers((prevUsers) =>
-                                    prevUsers.map((u) => (u.id === user.id ? { ...u, role: newRole } : u)),
-                                  )
-                                  showNotification("success", `User role updated to ${newRole} successfully!`)
+                                    prevUsers.map((u) =>
+                                      u.id === user.id
+                                        ? { ...u, role: newRole }
+                                        : u
+                                    )
+                                  );
+                                  showNotification(
+                                    "success",
+                                    `User role updated to ${newRole} successfully!`
+                                  );
                                 } catch (error) {
-                                  showNotification("error", "Failed to update user role. Please try again.")
+                                  showNotification(
+                                    "error",
+                                    "Failed to update user role. Please try again."
+                                  );
                                 } finally {
-                                  setIsLoading(false)
+                                  setIsLoading(false);
                                 }
                               }}
                               className="bg-white border border-gray-300 text-gray-700 py-1 px-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -1142,12 +1426,15 @@ const AdminDashboard = () => {
                 {/* Pagination */}
                 <div className="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-sm text-gray-500 text-center sm:text-left">
-                    Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUsers.length)} of{" "}
+                    Showing {indexOfFirstItem + 1} to{" "}
+                    {Math.min(indexOfLastItem, filteredUsers.length)} of{" "}
                     {filteredUsers.length} users
                   </div>
                   <div className="flex flex-wrap justify-center gap-2">
                     <button
-                      onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
+                      onClick={() =>
+                        paginate(currentPage > 1 ? currentPage - 1 : 1)
+                      }
                       disabled={currentPage === 1}
                       className={`px-3 py-1 rounded-md ${
                         currentPage === 1
@@ -1157,50 +1444,65 @@ const AdminDashboard = () => {
                     >
                       Previous
                     </button>
-                    {Array.from({ length: Math.min(5, Math.ceil(filteredUsers.length / itemsPerPage)) }, (_, i) => {
-                      // Show first page, last page, current page, and pages around current
-                      const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
-                      let pageNum
+                    {Array.from(
+                      {
+                        length: Math.min(
+                          5,
+                          Math.ceil(filteredUsers.length / itemsPerPage)
+                        ),
+                      },
+                      (_, i) => {
+                        // Show first page, last page, current page, and pages around current
+                        const totalPages = Math.ceil(
+                          filteredUsers.length / itemsPerPage
+                        );
+                        let pageNum;
 
-                      if (totalPages <= 5) {
-                        pageNum = i + 1
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1
-                        if (i === 4) pageNum = totalPages
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i
-                        if (i === 0) pageNum = 1
-                      } else {
-                        pageNum = currentPage - 2 + i
-                        if (i === 0) pageNum = 1
-                        if (i === 4) pageNum = totalPages
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                          if (i === 4) pageNum = totalPages;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                          if (i === 0) pageNum = 1;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                          if (i === 0) pageNum = 1;
+                          if (i === 4) pageNum = totalPages;
+                        }
+
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => paginate(pageNum)}
+                            className={`px-3 py-1 rounded-md ${
+                              currentPage === pageNum
+                                ? "bg-indigo-600 text-white"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
                       }
-
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => paginate(pageNum)}
-                          className={`px-3 py-1 rounded-md ${
-                            currentPage === pageNum
-                              ? "bg-indigo-600 text-white"
-                              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      )
-                    })}
+                    )}
                     <button
                       onClick={() =>
                         paginate(
-                          currentPage < Math.ceil(filteredUsers.length / itemsPerPage)
+                          currentPage <
+                            Math.ceil(filteredUsers.length / itemsPerPage)
                             ? currentPage + 1
-                            : Math.ceil(filteredUsers.length / itemsPerPage),
+                            : Math.ceil(filteredUsers.length / itemsPerPage)
                         )
                       }
-                      disabled={currentPage === Math.ceil(filteredUsers.length / itemsPerPage)}
+                      disabled={
+                        currentPage ===
+                        Math.ceil(filteredUsers.length / itemsPerPage)
+                      }
                       className={`px-3 py-1 rounded-md ${
-                        currentPage === Math.ceil(filteredUsers.length / itemsPerPage)
+                        currentPage ===
+                        Math.ceil(filteredUsers.length / itemsPerPage)
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
@@ -1223,8 +1525,12 @@ const AdminDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <h2 className="text-2xl font-bold text-gray-900">Company Management</h2>
-                  <p className="text-gray-600">Manage all companies registered on the platform.</p>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Company Management
+                  </h2>
+                  <p className="text-gray-600">
+                    Manage all companies registered on the platform.
+                  </p>
                 </motion.div>
 
                 <motion.div
@@ -1253,7 +1559,10 @@ const AdminDashboard = () => {
               >
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <Search
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={20}
+                    />
                     <input
                       type="text"
                       placeholder="Search companies by name or email..."
@@ -1275,18 +1584,29 @@ const AdminDashboard = () => {
                 {/* Mobile view - card style */}
                 <div className="block md:hidden">
                   {currentCompanies.map((company) => (
-                    <div key={company.id} className="p-4 border-b border-gray-200">
+                    <div
+                      key={company.id}
+                      className="p-4 border-b border-gray-200"
+                    >
                       <div className="mb-3">
-                        <h3 className="text-lg font-medium text-gray-900">{company.companyName}</h3>
-                        <p className="text-sm text-gray-500">{company.companyEmail}</p>
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {company.companyName}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {company.companyEmail}
+                        </p>
                       </div>
                       <div className="space-y-2 text-sm">
                         <div>
-                          <span className="text-gray-500 block font-medium">Description:</span>
+                          <span className="text-gray-500 block font-medium">
+                            Description:
+                          </span>
                           <p className="text-gray-700">{company.description}</p>
                         </div>
                         <div>
-                          <span className="text-gray-500 block font-medium">Website:</span>
+                          <span className="text-gray-500 block font-medium">
+                            Website:
+                          </span>
                           <a
                             href={company.website}
                             target="_blank"
@@ -1322,10 +1642,19 @@ const AdminDashboard = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {currentCompanies.map((company) => (
-                        <tr key={company.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-normal break-words">{company.companyName}</td>
-                          <td className="px-6 py-4 whitespace-normal break-words">{company.companyEmail}</td>
-                          <td className="px-6 py-4 whitespace-normal break-words">{company.description}</td>
+                        <tr
+                          key={company.id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 whitespace-normal break-words">
+                            {company.companyName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-normal break-words">
+                            {company.companyEmail}
+                          </td>
+                          <td className="px-6 py-4 whitespace-normal break-words">
+                            {company.description}
+                          </td>
                           <td className="px-6 py-4 whitespace-normal break-words">
                             <a
                               href={company.website}
@@ -1345,12 +1674,15 @@ const AdminDashboard = () => {
                 {/* Pagination */}
                 <div className="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-sm text-gray-500 text-center sm:text-left">
-                    Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredCompanies.length)} of{" "}
+                    Showing {indexOfFirstItem + 1} to{" "}
+                    {Math.min(indexOfLastItem, filteredCompanies.length)} of{" "}
                     {filteredCompanies.length} companies
                   </div>
                   <div className="flex flex-wrap justify-center gap-2">
                     <button
-                      onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
+                      onClick={() =>
+                        paginate(currentPage > 1 ? currentPage - 1 : 1)
+                      }
                       disabled={currentPage === 1}
                       className={`px-3 py-1 rounded-md ${
                         currentPage === 1
@@ -1360,50 +1692,65 @@ const AdminDashboard = () => {
                     >
                       Previous
                     </button>
-                    {Array.from({ length: Math.min(5, Math.ceil(filteredCompanies.length / itemsPerPage)) }, (_, i) => {
-                      // Show first page, last page, current page, and pages around current
-                      const totalPages = Math.ceil(filteredCompanies.length / itemsPerPage)
-                      let pageNum
+                    {Array.from(
+                      {
+                        length: Math.min(
+                          5,
+                          Math.ceil(filteredCompanies.length / itemsPerPage)
+                        ),
+                      },
+                      (_, i) => {
+                        // Show first page, last page, current page, and pages around current
+                        const totalPages = Math.ceil(
+                          filteredCompanies.length / itemsPerPage
+                        );
+                        let pageNum;
 
-                      if (totalPages <= 5) {
-                        pageNum = i + 1
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1
-                        if (i === 4) pageNum = totalPages
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i
-                        if (i === 0) pageNum = 1
-                      } else {
-                        pageNum = currentPage - 2 + i
-                        if (i === 0) pageNum = 1
-                        if (i === 4) pageNum = totalPages
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                          if (i === 4) pageNum = totalPages;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                          if (i === 0) pageNum = 1;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                          if (i === 0) pageNum = 1;
+                          if (i === 4) pageNum = totalPages;
+                        }
+
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => paginate(pageNum)}
+                            className={`px-3 py-1 rounded-md ${
+                              currentPage === pageNum
+                                ? "bg-indigo-600 text-white"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
                       }
-
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => paginate(pageNum)}
-                          className={`px-3 py-1 rounded-md ${
-                            currentPage === pageNum
-                              ? "bg-indigo-600 text-white"
-                              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      )
-                    })}
+                    )}
                     <button
                       onClick={() =>
                         paginate(
-                          currentPage < Math.ceil(filteredCompanies.length / itemsPerPage)
+                          currentPage <
+                            Math.ceil(filteredCompanies.length / itemsPerPage)
                             ? currentPage + 1
-                            : Math.ceil(filteredCompanies.length / itemsPerPage),
+                            : Math.ceil(filteredCompanies.length / itemsPerPage)
                         )
                       }
-                      disabled={currentPage === Math.ceil(filteredCompanies.length / itemsPerPage)}
+                      disabled={
+                        currentPage ===
+                        Math.ceil(filteredCompanies.length / itemsPerPage)
+                      }
                       className={`px-3 py-1 rounded-md ${
-                        currentPage === Math.ceil(filteredCompanies.length / itemsPerPage)
+                        currentPage ===
+                        Math.ceil(filteredCompanies.length / itemsPerPage)
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
@@ -1426,8 +1773,12 @@ const AdminDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <h2 className="text-2xl font-bold text-gray-900">Job Management</h2>
-                  <p className="text-gray-600">Manage all job listings on the platform.</p>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Job Management
+                  </h2>
+                  <p className="text-gray-600">
+                    Manage all job listings on the platform.
+                  </p>
                 </motion.div>
 
                 <motion.div
@@ -1456,7 +1807,10 @@ const AdminDashboard = () => {
               >
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <Search
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={20}
+                    />
                     <input
                       type="text"
                       placeholder="Search jobs by title or company..."
@@ -1480,26 +1834,44 @@ const AdminDashboard = () => {
                   {currentJobs.map((job) => (
                     <div key={job.id} className="p-4 border-b border-gray-200">
                       <div className="mb-3">
-                        <h3 className="text-lg font-medium text-gray-900">{job.title}</h3>
-                        <p className="text-sm font-medium text-indigo-600">{job.company?.companyName || "-"}</p>
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {job.title}
+                        </h3>
+                        <p className="text-sm font-medium text-indigo-600">
+                          {job.company?.companyName || "-"}
+                        </p>
                       </div>
                       <div className="grid grid-cols-2 gap-x-26 sm:gap-x-10 gap-y-2 text-sm">
                         <div>
-                          <span className="text-gray-500 block">Company Email:</span>
-                          <span className="text-gray-700">{job.company?.companyEmail || "-"}</span>
+                          <span className="text-gray-500 block">
+                            Company Email:
+                          </span>
+                          <span className="text-gray-700">
+                            {job.company?.companyEmail || "-"}
+                          </span>
                         </div>
                         <div>
                           <span className="text-gray-500 block">Location:</span>
-                          <span className="text-gray-700">{job.location || "-"}</span>
+                          <span className="text-gray-700">
+                            {job.location || "-"}
+                          </span>
                         </div>
                         <div>
                           <span className="text-gray-500 block">Salary:</span>
-                          <span className="text-gray-700">{job.salary ? `$${job.salary.toLocaleString()}` : "-"}</span>
+                          <span className="text-gray-700">
+                            {job.salary
+                              ? `$${job.salary.toLocaleString()}`
+                              : "-"}
+                          </span>
                         </div>
                         <div>
-                          <span className="text-gray-500 block">Posted Date:</span>
+                          <span className="text-gray-500 block">
+                            Posted Date:
+                          </span>
                           <span className="text-gray-700">
-                            {job.postedDate ? new Date(job.postedDate).toLocaleDateString() : "-"}
+                            {job.postedDate
+                              ? new Date(job.postedDate).toLocaleDateString()
+                              : "-"}
                           </span>
                         </div>
                       </div>
@@ -1534,18 +1906,31 @@ const AdminDashboard = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {currentJobs.map((job) => (
-                        <tr key={job.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-normal break-words">{job.title}</td>
-                          <td className="px-6 py-4 whitespace-normal break-words">{job.company?.companyName || "-"}</td>
+                        <tr
+                          key={job.id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 whitespace-normal break-words">
+                            {job.title}
+                          </td>
+                          <td className="px-6 py-4 whitespace-normal break-words">
+                            {job.company?.companyName || "-"}
+                          </td>
                           <td className="px-6 py-4 whitespace-normal break-words">
                             {job.company?.companyEmail || "-"}
                           </td>
-                          <td className="px-6 py-4 whitespace-normal break-words">{job.location || "-"}</td>
                           <td className="px-6 py-4 whitespace-normal break-words">
-                            {job.salary ? `$${job.salary.toLocaleString()}` : "-"}
+                            {job.location || "-"}
                           </td>
                           <td className="px-6 py-4 whitespace-normal break-words">
-                            {job.postedDate ? new Date(job.postedDate).toLocaleDateString() : "-"}
+                            {job.salary
+                              ? `$${job.salary.toLocaleString()}`
+                              : "-"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-normal break-words">
+                            {job.postedDate
+                              ? new Date(job.postedDate).toLocaleDateString()
+                              : "-"}
                           </td>
                         </tr>
                       ))}
@@ -1556,12 +1941,15 @@ const AdminDashboard = () => {
                 {/* Pagination */}
                 <div className="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-sm text-gray-500 text-center sm:text-left">
-                    Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredJobs.length)} of{" "}
+                    Showing {indexOfFirstItem + 1} to{" "}
+                    {Math.min(indexOfLastItem, filteredJobs.length)} of{" "}
                     {filteredJobs.length} jobs
                   </div>
                   <div className="flex flex-wrap justify-center gap-2">
                     <button
-                      onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
+                      onClick={() =>
+                        paginate(currentPage > 1 ? currentPage - 1 : 1)
+                      }
                       disabled={currentPage === 1}
                       className={`px-3 py-1 rounded-md ${
                         currentPage === 1
@@ -1571,50 +1959,65 @@ const AdminDashboard = () => {
                     >
                       Previous
                     </button>
-                    {Array.from({ length: Math.min(5, Math.ceil(filteredJobs.length / itemsPerPage)) }, (_, i) => {
-                      // Show first page, last page, current page, and pages around current
-                      const totalPages = Math.ceil(filteredJobs.length / itemsPerPage)
-                      let pageNum
+                    {Array.from(
+                      {
+                        length: Math.min(
+                          5,
+                          Math.ceil(filteredJobs.length / itemsPerPage)
+                        ),
+                      },
+                      (_, i) => {
+                        // Show first page, last page, current page, and pages around current
+                        const totalPages = Math.ceil(
+                          filteredJobs.length / itemsPerPage
+                        );
+                        let pageNum;
 
-                      if (totalPages <= 5) {
-                        pageNum = i + 1
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1
-                        if (i === 4) pageNum = totalPages
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i
-                        if (i === 0) pageNum = 1
-                      } else {
-                        pageNum = currentPage - 2 + i
-                        if (i === 0) pageNum = 1
-                        if (i === 4) pageNum = totalPages
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                          if (i === 4) pageNum = totalPages;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                          if (i === 0) pageNum = 1;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                          if (i === 0) pageNum = 1;
+                          if (i === 4) pageNum = totalPages;
+                        }
+
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => paginate(pageNum)}
+                            className={`px-3 py-1 rounded-md ${
+                              currentPage === pageNum
+                                ? "bg-indigo-600 text-white"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
                       }
-
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => paginate(pageNum)}
-                          className={`px-3 py-1 rounded-md ${
-                            currentPage === pageNum
-                              ? "bg-indigo-600 text-white"
-                              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      )
-                    })}
+                    )}
                     <button
                       onClick={() =>
                         paginate(
-                          currentPage < Math.ceil(filteredJobs.length / itemsPerPage)
+                          currentPage <
+                            Math.ceil(filteredJobs.length / itemsPerPage)
                             ? currentPage + 1
-                            : Math.ceil(filteredJobs.length / itemsPerPage),
+                            : Math.ceil(filteredJobs.length / itemsPerPage)
                         )
                       }
-                      disabled={currentPage === Math.ceil(filteredJobs.length / itemsPerPage)}
+                      disabled={
+                        currentPage ===
+                        Math.ceil(filteredJobs.length / itemsPerPage)
+                      }
                       className={`px-3 py-1 rounded-md ${
-                        currentPage === Math.ceil(filteredJobs.length / itemsPerPage)
+                        currentPage ===
+                        Math.ceil(filteredJobs.length / itemsPerPage)
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
@@ -1627,8 +2030,8 @@ const AdminDashboard = () => {
             </div>
           )}
 
-      {/* Analytics Tab */}
-      {activeTab === "analytics" && (
+          {/* Analytics Tab */}
+          {activeTab === "analytics" && (
             <div className="space-y-6">
               {/* Page Title */}
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -1637,8 +2040,12 @@ const AdminDashboard = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <h2 className="text-2xl font-bold text-gray-900">Analytics</h2>
-                  <p className="text-gray-600">Detailed analytics and insights about your platform.</p>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Analytics
+                  </h2>
+                  <p className="text-gray-600">
+                    Detailed analytics and insights about your platform.
+                  </p>
                 </motion.div>
 
                 <motion.div
@@ -1675,17 +2082,23 @@ const AdminDashboard = () => {
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Platform Growth</h3>
-                      <p className="text-sm text-gray-500">Total counts of users, companies, and jobs</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Platform Growth
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Total counts of users, companies, and jobs
+                      </p>
                     </div>
                   </div>
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={[
-                        { name: 'Users', count: stats.totalUsers },
-                        { name: 'Companies', count: stats.totalCompanies },
-                        { name: 'Jobs', count: stats.totalJobs },
-                      ]}>
+                      <BarChart
+                        data={[
+                          { name: "Users", count: stats.totalUsers },
+                          { name: "Companies", count: stats.totalCompanies },
+                          { name: "Jobs", count: stats.totalJobs },
+                        ]}
+                      >
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis allowDecimals={false} />
@@ -1709,8 +2122,12 @@ const AdminDashboard = () => {
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">User Distribution</h3>
-                      <p className="text-sm text-gray-500">Distribution by role</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        User Distribution
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Distribution by role
+                      </p>
                     </div>
                     <div className="p-3 bg-purple-50 rounded-full">
                       <PieChart size={20} className="text-purple-600" />
@@ -1718,7 +2135,12 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="h-64 flex items-center justify-center">
-                    <DistributionChart data={{ user: stats.totalUsers, company: stats.totalCompanies }} />
+                    <DistributionChart
+                      data={{
+                        user: stats.totalUsers,
+                        company: stats.totalCompanies,
+                      }}
+                    />
                   </div>
                 </motion.div>
 
@@ -1729,15 +2151,18 @@ const AdminDashboard = () => {
                   transition={{ duration: 0.5, delay: 0.4 }}
                   className="md:col-span-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
                 >
-                    
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Job Applications</h3>
-                      <p className="text-sm text-gray-500">Monthly job applications</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Job Applications
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Monthly job applications
+                      </p>
                     </div>
                     <div className="flex justify-end mb-2">
                       <span className="px-3 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
-                         (Coming Soon)
+                        (Coming Soon)
                       </span>
                     </div>
                     <div className="p-3 bg-green-50 rounded-full">
@@ -1746,7 +2171,7 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="h-64 sm:h-72">
-                   <ApplicationsChart data={monthlyData.applications} />
+                    <ApplicationsChart data={monthlyData.applications} />
                   </div>
                 </motion.div>
 
@@ -1759,8 +2184,12 @@ const AdminDashboard = () => {
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Top Companies</h3>
-                      <p className="text-sm text-gray-500">Companies with most job postings</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Top Companies
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Companies with most job postings
+                      </p>
                     </div>
                     <div className="p-3 bg-indigo-50 rounded-full">
                       <Building size={20} className="text-indigo-600" />
@@ -1781,19 +2210,22 @@ const AdminDashboard = () => {
                               className={`w-10 h-10 rounded-full flex items-center justify-center ${
                                 index === 0
                                   ? "bg-yellow-100 text-yellow-600"
-                                    : index === 1
-                                    ? "bg-gray-100 text-gray-600"
-                                    : "bg-orange-100 text-orange-600"
+                                  : index === 1
+                                  ? "bg-gray-100 text-gray-600"
+                                  : "bg-orange-100 text-orange-600"
                               }`}
                             >
                               {index + 1}
                             </div>
                             <div className="ml-3">
-                              <p className="font-medium text-gray-900">{company.companyName}</p>
-                              <p className="text-sm text-gray-500">{company.jobCount} jobs</p>
+                              <p className="font-medium text-gray-900">
+                                {company.companyName}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {company.jobCount} jobs
+                              </p>
                             </div>
                           </div>
-                        
                         </div>
                       ))}
                   </div>
@@ -1813,7 +2245,9 @@ const AdminDashboard = () => {
                   transition={{ duration: 0.5 }}
                 >
                   <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
-                  <p className="text-gray-600">Manage your admin account and platform settings.</p>
+                  <p className="text-gray-600">
+                    Manage your admin account and platform settings.
+                  </p>
                 </motion.div>
               </div>
 
@@ -1901,8 +2335,12 @@ const AdminDashboard = () => {
 
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Platform Settings</h3>
-                      <p className="text-sm text-gray-500">Configure platform behavior</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Platform Settings
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Configure platform behavior
+                      </p>
                     </div>
                     <div className="p-3 bg-purple-50 rounded-full">
                       <Layers size={20} className="text-purple-600" />
@@ -1912,11 +2350,20 @@ const AdminDashboard = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">User Registration</h4>
-                        <p className="text-xs text-gray-500">Allow new users to register</p>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          User Registration
+                        </h4>
+                        <p className="text-xs text-gray-500">
+                          Allow new users to register
+                        </p>
                       </div>
                       <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                        <input type="checkbox" id="toggle-registration" defaultChecked className="sr-only" />
+                        <input
+                          type="checkbox"
+                          id="toggle-registration"
+                          defaultChecked
+                          className="sr-only"
+                        />
                         <label
                           htmlFor="toggle-registration"
                           className="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
@@ -1927,11 +2374,20 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Company Registration</h4>
-                        <p className="text-xs text-gray-500">Allow new companies to register</p>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          Company Registration
+                        </h4>
+                        <p className="text-xs text-gray-500">
+                          Allow new companies to register
+                        </p>
                       </div>
                       <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                        <input type="checkbox" id="toggle-company" defaultChecked className="sr-only" />
+                        <input
+                          type="checkbox"
+                          id="toggle-company"
+                          defaultChecked
+                          className="sr-only"
+                        />
                         <label
                           htmlFor="toggle-company"
                           className="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
@@ -1942,11 +2398,20 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Job Posting</h4>
-                        <p className="text-xs text-gray-500">Allow companies to post new jobs</p>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          Job Posting
+                        </h4>
+                        <p className="text-xs text-gray-500">
+                          Allow companies to post new jobs
+                        </p>
                       </div>
                       <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                        <input type="checkbox" id="toggle-jobs" defaultChecked className="sr-only" />
+                        <input
+                          type="checkbox"
+                          id="toggle-jobs"
+                          defaultChecked
+                          className="sr-only"
+                        />
                         <label
                           htmlFor="toggle-jobs"
                           className="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
@@ -1957,11 +2422,19 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">Auto-Approve Companies</h4>
-                        <p className="text-xs text-gray-500">Automatically approve new company registrations</p>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          Auto-Approve Companies
+                        </h4>
+                        <p className="text-xs text-gray-500">
+                          Automatically approve new company registrations
+                        </p>
                       </div>
                       <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                        <input type="checkbox" id="toggle-auto-approve" className="sr-only" />
+                        <input
+                          type="checkbox"
+                          id="toggle-auto-approve"
+                          className="sr-only"
+                        />
                         <label
                           htmlFor="toggle-auto-approve"
                           className="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
@@ -1987,13 +2460,17 @@ const AdminDashboard = () => {
                 >
                   <div className="flex justify-end mb-2">
                     <span className="px-3 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">
-                    BETA (Coming Soon)
+                      BETA (Coming Soon)
                     </span>
                   </div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Email Settings</h3>
-                      <p className="text-sm text-gray-500">Configure email notifications</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Email Settings
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Configure email notifications
+                      </p>
                     </div>
                     <div className="p-3 bg-green-50 rounded-full">
                       <Mail size={20} className="text-green-600" />
@@ -2003,11 +2480,20 @@ const AdminDashboard = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">New User Notifications</h4>
-                        <p className="text-xs text-gray-500">Receive email when a new user registers</p>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          New User Notifications
+                        </h4>
+                        <p className="text-xs text-gray-500">
+                          Receive email when a new user registers
+                        </p>
                       </div>
                       <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                        <input type="checkbox" id="toggle-email-user" defaultChecked className="sr-only" />
+                        <input
+                          type="checkbox"
+                          id="toggle-email-user"
+                          defaultChecked
+                          className="sr-only"
+                        />
                         <label
                           htmlFor="toggle-email-user"
                           className="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
@@ -2018,11 +2504,20 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">New Company Notifications</h4>
-                        <p className="text-xs text-gray-500">Receive email when a new company registers</p>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          New Company Notifications
+                        </h4>
+                        <p className="text-xs text-gray-500">
+                          Receive email when a new company registers
+                        </p>
                       </div>
                       <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                        <input type="checkbox" id="toggle-email-company" defaultChecked className="sr-only" />
+                        <input
+                          type="checkbox"
+                          id="toggle-email-company"
+                          defaultChecked
+                          className="sr-only"
+                        />
                         <label
                           htmlFor="toggle-email-company"
                           className="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
@@ -2033,11 +2528,19 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">New Job Notifications</h4>
-                        <p className="text-xs text-gray-500">Receive email when a new job is posted</p>
+                        <h4 className="text-sm font-medium text-gray-900">
+                          New Job Notifications
+                        </h4>
+                        <p className="text-xs text-gray-500">
+                          Receive email when a new job is posted
+                        </p>
                       </div>
                       <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                        <input type="checkbox" id="toggle-email-job" className="sr-only" />
+                        <input
+                          type="checkbox"
+                          id="toggle-email-job"
+                          className="sr-only"
+                        />
                         <label
                           htmlFor="toggle-email-job"
                           className="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
@@ -2063,8 +2566,12 @@ const AdminDashboard = () => {
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Help & Support</h3>
-                      <p className="text-sm text-gray-500">Get help with the admin dashboard</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Help & Support
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Get help with the admin dashboard
+                      </p>
                     </div>
                     <div className="p-3 bg-blue-50 rounded-full">
                       <HelpCircle size={20} className="text-blue-600" />
@@ -2073,17 +2580,24 @@ const AdminDashboard = () => {
 
                   <div className="space-y-4">
                     <div className="p-4 bg-blue-50 rounded-lg">
-                      <h4 className="text-sm font-medium text-blue-800 mb-2">Documentation</h4>
+                      <h4 className="text-sm font-medium text-blue-800 mb-2">
+                        Documentation
+                      </h4>
                       <p className="text-xs text-blue-700 mb-3">
-                        Access comprehensive documentation for the admin dashboard.
+                        Access comprehensive documentation for the admin
+                        dashboard.
                       </p>
                       <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
                         View Documentation
                       </button>
                     </div>
                     <div className="p-4 bg-green-50 rounded-lg">
-                      <h4 className="text-sm font-medium text-green-800 mb-2">Contact Support</h4>
-                      <p className="text-xs text-green-700 mb-3">Need help? Contact our support team for assistance.</p>
+                      <h4 className="text-sm font-medium text-green-800 mb-2">
+                        Contact Support
+                      </h4>
+                      <p className="text-xs text-green-700 mb-3">
+                        Need help? Contact our support team for assistance.
+                      </p>
                       <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
                         Contact Support
                       </button>
@@ -2115,8 +2629,8 @@ const AdminDashboard = () => {
                 <h3 className="text-xl font-bold text-gray-900">Edit User</h3>
                 <button
                   onClick={() => {
-                    setShowUserModal(false)
-                    setSelectedUser(null)
+                    setShowUserModal(false);
+                    setSelectedUser(null);
                   }}
                   className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                 >
@@ -2126,7 +2640,10 @@ const AdminDashboard = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="edit-name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Name
                   </label>
                   <input
@@ -2137,7 +2654,10 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="edit-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="edit-email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Email
                   </label>
                   <input
@@ -2148,13 +2668,18 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="edit-role" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="edit-role"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Role
                   </label>
                   <select
                     id="edit-role"
                     defaultValue={selectedUser.role}
-                    onChange={(e) => handleUserRoleChange(selectedUser.id, e.target.value)}
+                    onChange={(e) =>
+                      handleUserRoleChange(selectedUser.id, e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value="user">User</option>
@@ -2163,13 +2688,18 @@ const AdminDashboard = () => {
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="edit-status" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="edit-status"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Status
                   </label>
                   <select
                     id="edit-status"
                     defaultValue={selectedUser.status}
-                    onChange={(e) => handleUserStatusChange(selectedUser.id, e.target.value)}
+                    onChange={(e) =>
+                      handleUserStatusChange(selectedUser.id, e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value="active">Active</option>
@@ -2180,8 +2710,8 @@ const AdminDashboard = () => {
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     onClick={() => {
-                      setShowUserModal(false)
-                      setSelectedUser(null)
+                      setShowUserModal(false);
+                      setSelectedUser(null);
                     }}
                     className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
                   >
@@ -2189,9 +2719,9 @@ const AdminDashboard = () => {
                   </button>
                   <button
                     onClick={() => {
-                      showNotification("success", "User updated successfully!")
-                      setShowUserModal(false)
-                      setSelectedUser(null)
+                      showNotification("success", "User updated successfully!");
+                      setShowUserModal(false);
+                      setSelectedUser(null);
                     }}
                     className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
                   >
@@ -2220,11 +2750,13 @@ const AdminDashboard = () => {
               className="bg-white rounded-xl shadow-lg max-w-md w-full p-6"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900">Edit Company</h3>
+                <h3 className="text-xl font-bold text-gray-900">
+                  Edit Company
+                </h3>
                 <button
                   onClick={() => {
-                    setShowCompanyModal(false)
-                    setSelectedCompany(null)
+                    setShowCompanyModal(false);
+                    setSelectedCompany(null);
                   }}
                   className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                 >
@@ -2234,7 +2766,10 @@ const AdminDashboard = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="edit-company-name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="edit-company-name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Company Name
                   </label>
                   <input
@@ -2245,7 +2780,10 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="edit-company-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="edit-company-email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Email
                   </label>
                   <input
@@ -2256,7 +2794,10 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="edit-company-industry" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="edit-company-industry"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Industry
                   </label>
                   <input
@@ -2267,13 +2808,21 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="edit-company-status" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="edit-company-status"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Status
                   </label>
                   <select
                     id="edit-company-status"
                     defaultValue={selectedCompany.status}
-                    onChange={(e) => handleCompanyStatusChange(selectedCompany.id, e.target.value)}
+                    onChange={(e) =>
+                      handleCompanyStatusChange(
+                        selectedCompany.id,
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value="active">Active</option>
@@ -2284,8 +2833,8 @@ const AdminDashboard = () => {
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     onClick={() => {
-                      setShowCompanyModal(false)
-                      setSelectedCompany(null)
+                      setShowCompanyModal(false);
+                      setSelectedCompany(null);
                     }}
                     className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
                   >
@@ -2293,9 +2842,12 @@ const AdminDashboard = () => {
                   </button>
                   <button
                     onClick={() => {
-                      showNotification("success", "Company updated successfully!")
-                      setShowCompanyModal(false)
-                      setSelectedCompany(null)
+                      showNotification(
+                        "success",
+                        "Company updated successfully!"
+                      );
+                      setShowCompanyModal(false);
+                      setSelectedCompany(null);
                     }}
                     className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
                   >
@@ -2308,42 +2860,57 @@ const AdminDashboard = () => {
         )}
       </AnimatePresence>
     </div>
-  )
-}
+  );
+};
 
 // Helper Components
 const SidebarLink = ({ icon, label, active, onClick }) => (
   <button
     onClick={onClick}
     className={`flex items-center w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-      active ? "bg-indigo-50 text-indigo-600" : "text-gray-700 hover:bg-gray-100"
+      active
+        ? "bg-indigo-50 text-indigo-600"
+        : "text-gray-700 hover:bg-gray-100"
     }`}
   >
     <span className="mr-3">{icon}</span>
     {label}
   </button>
-)
+);
 
 const ActivityItem = ({ icon, title, description, time, color }) => (
   <div className="flex items-center gap-4">
-    <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-${color}-50`}>{icon}</div>
+    <div
+      className={`w-10 h-10 rounded-full flex items-center justify-center bg-${color}-50`}
+    >
+      {icon}
+    </div>
     <div>
       <h4 className="text-sm font-medium text-gray-900">{title}</h4>
-      <p className="text-xs text-gray-500">{description}</p>    
+      <p className="text-xs text-gray-500">{description}</p>
       <p className="text-xs text-gray-400">{time}</p>
     </div>
   </div>
-)
+);
 
 // Chart Components
 const GrowthChart = ({ data }) => {
-  const maxValue = Math.max(
-    ...data.users,
-    ...data.companies,
-    ...data.jobs
-  )
+  const maxValue = Math.max(...data.users, ...data.companies, ...data.jobs);
 
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
   return (
     <div className="w-full h-full">
@@ -2357,7 +2924,9 @@ const GrowthChart = ({ data }) => {
               ></div>
               <div
                 className="w-8 bg-purple-500 rounded-t-md"
-                style={{ height: `${(data.companies[index] / maxValue) * 100}%` }}
+                style={{
+                  height: `${(data.companies[index] / maxValue) * 100}%`,
+                }}
               ></div>
               <div
                 className="w-8 bg-indigo-500 rounded-t-md"
@@ -2383,19 +2952,22 @@ const GrowthChart = ({ data }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const DistributionChart = ({ data }) => {
   const filteredData = {
     user: data.user || 0,
-    company: data.company || 0
-  }
-  const total = Object.values(filteredData).reduce((sum, count) => sum + count, 0)
+    company: data.company || 0,
+  };
+  const total = Object.values(filteredData).reduce(
+    (sum, count) => sum + count,
+    0
+  );
   const colors = {
-    user: '#3b82f6',      // blue-500
-    company: '#ec4899'    // pink-500
-  }
+    user: "#3b82f6", // blue-500
+    company: "#ec4899", // pink-500
+  };
 
   if (total === 0) {
     return (
@@ -2405,60 +2977,76 @@ const DistributionChart = ({ data }) => {
         </svg>
         <div className="mt-4 text-gray-400 text-sm">No data</div>
       </div>
-    )
+    );
   }
 
   // Calculate pie slices
-  let startAngle = 0
+  let startAngle = 0;
   const slices = Object.entries(filteredData).map(([role, count]) => {
-    const value = count / total
-    const angle = value * 360
-    const endAngle = startAngle + angle
-    const largeArc = angle > 180 ? 1 : 0
-    const x1 = 100 + 90 * Math.cos((Math.PI * (startAngle - 90)) / 180)
-    const y1 = 100 + 90 * Math.sin((Math.PI * (startAngle - 90)) / 180)
-    const x2 = 100 + 90 * Math.cos((Math.PI * (endAngle - 90)) / 180)
-    const y2 = 100 + 90 * Math.sin((Math.PI * (endAngle - 90)) / 180)
-    const path = `M100,100 L${x1},${y1} A90,90 0 ${largeArc},1 ${x2},${y2} Z`
-    const slice = { path, color: colors[role], role, count }
-    startAngle += angle
-    return slice
-  })
+    const value = count / total;
+    const angle = value * 360;
+    const endAngle = startAngle + angle;
+    const largeArc = angle > 180 ? 1 : 0;
+    const x1 = 100 + 90 * Math.cos((Math.PI * (startAngle - 90)) / 180);
+    const y1 = 100 + 90 * Math.sin((Math.PI * (startAngle - 90)) / 180);
+    const x2 = 100 + 90 * Math.cos((Math.PI * (endAngle - 90)) / 180);
+    const y2 = 100 + 90 * Math.sin((Math.PI * (endAngle - 90)) / 180);
+    const path = `M100,100 L${x1},${y1} A90,90 0 ${largeArc},1 ${x2},${y2} Z`;
+    const slice = { path, color: colors[role], role, count };
+    startAngle += angle;
+    return slice;
+  });
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
       <svg width="200" height="200" viewBox="0 0 200 200">
         {slices.map((slice, i) => (
-          <path key={i} d={slice.path} fill={slice.color} stroke="#fff" strokeWidth="2" />
+          <path
+            key={i}
+            d={slice.path}
+            fill={slice.color}
+            stroke="#fff"
+            strokeWidth="2"
+          />
         ))}
       </svg>
       <div className="flex flex-col space-y-2 mt-4">
         {Object.entries(filteredData).map(([role, count]) => (
           <div key={role} className="flex items-center">
-            <span className="inline-block w-3 h-3 rounded-full mr-2" style={{ backgroundColor: colors[role] }}></span>
-            <span className="text-sm text-gray-600 capitalize">{role === 'user' ? 'Users' : 'Companies'}</span>
+            <span
+              className="inline-block w-3 h-3 rounded-full mr-2"
+              style={{ backgroundColor: colors[role] }}
+            ></span>
+            <span className="text-sm text-gray-600 capitalize">
+              {role === "user" ? "Users" : "Companies"}
+            </span>
             <span className="text-sm text-gray-500 ml-2">({count})</span>
           </div>
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const ApplicationsChart = ({ data }) => {
   return (
     <div className="w-full h-full flex items-end justify-between px-2 sm:px-4">
       {data.map((value, index) => (
-        <div key={index} className="flex flex-col items-center flex-1 min-w-[20px]">
+        <div
+          key={index}
+          className="flex flex-col items-center flex-1 min-w-[20px]"
+        >
           <div
             className="w-full max-w-[24px] bg-gradient-to-t from-green-600 to-green-400 rounded-t-md"
             style={{ height: `${(value / Math.max(...data)) * 100}%` }}
           ></div>
-          <span className="text-[10px] sm:text-xs text-gray-500 mt-1">{index + 1}</span>
+          <span className="text-[10px] sm:text-xs text-gray-500 mt-1">
+            {index + 1}
+          </span>
         </div>
       ))}
     </div>
   );
 };
 
-export default AdminDashboard
+export default AdminDashboard;
