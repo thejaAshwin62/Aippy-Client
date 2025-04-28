@@ -38,13 +38,13 @@ const MockInterview = () => {
     const fetchQuestions = async () => {
       try {
         setIsLoading(true);
-        console.log('Fetching questions for job:', jobId, 'and user:', userId);
+        // console.log('Fetching questions for job:', jobId, 'and user:', userId);
         
         const response = await axios.get(`/api/v1/mock-questions/job/${jobId}/user/${userId}`, {
           withCredentials: true
         });
         
-        console.log('Questions response:', response.data);
+        // console.log('Questions response:', response.data);
         
         if (response.data && Array.isArray(response.data)) {
           // Take only first 5 questions
@@ -212,11 +212,11 @@ const MockInterview = () => {
         return false;
       }
 
-      console.log('Submitting answer:', {
-        mockQuestionId: questionId,
-        userId: userId,
-        userAnswer: currentAnswer
-      });
+      // console.log('Submitting answer:', {
+      //   mockQuestionId: questionId,
+      //   userId: userId,
+      //   userAnswer: currentAnswer
+      // });
 
       const response = await axios.post('/api/v1/user-answers/submit', {
         mockQuestionId: questionId,

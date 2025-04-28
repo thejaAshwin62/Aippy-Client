@@ -37,7 +37,7 @@ const JobListings = () => {
     }
     fetchUserDetails()
   }, [])
-  console.log(user);
+  // console.log(user);
 
 
   // Fetch jobs from backend
@@ -46,7 +46,7 @@ const JobListings = () => {
       try {
         setIsLoading(true)
         const response = await customFetch.get('/jobs')
-        console.log(response);
+        // console.log(response);
         
         setJobs(response.data)
         setFilteredJobs(response.data)
